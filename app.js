@@ -269,6 +269,7 @@
                 var param = e.target.dataset.param;
                 if (param === 'role' && paramsMod.appendCreateRoleTagRow) paramsMod.appendCreateRoleTagRow('', '');
                 else if (param === 'interest' && paramsMod.appendCreateInterestTagRow) paramsMod.appendCreateInterestTagRow('', '');
+                else if (param === 'discussionQuestion' && paramsMod.appendCreateQuestionRow) paramsMod.appendCreateQuestionRow('');
                 validateCreateForm();
             }
             if (e.target.classList.contains('btn-remove-tag')) {
@@ -287,12 +288,17 @@
             }
             var roleTags = (paramsMod.getCreateRoleTags || tags.getCreateRoleTags)();
             var interestTags = (paramsMod.getCreateInterestTags || tags.getCreateInterestTags)();
+            var discussionQs = paramsMod.getCreateDiscussionQuestions ? paramsMod.getCreateDiscussionQuestions() : [];
             if (selected.includes('role') && roleTags.length === 0) {
                 document.getElementById('create-error').textContent = 'Add at least one role tag.';
                 return;
             }
             if (selected.includes('interest') && interestTags.length === 0) {
                 document.getElementById('create-error').textContent = 'Add at least one interest tag.';
+                return;
+            }
+            if (selected.includes('discussionQuestion') && discussionQs.length === 0) {
+                document.getElementById('create-error').textContent = 'Add at least one discussion question.';
                 return;
             }
             document.getElementById('create-error').textContent = '';
@@ -310,6 +316,7 @@
             var weights = paramsMod.getWeightsForSession ? paramsMod.getWeightsForSession(selectedParams) : { role: 50, interest: 50 };
             var roleTags = (paramsMod.getCreateRoleTags || tags.getCreateRoleTags)();
             var interestTags = (paramsMod.getCreateInterestTags || tags.getCreateInterestTags)();
+            var discussionQuestions = paramsMod.getCreateDiscussionQuestions ? paramsMod.getCreateDiscussionQuestions() : [];
             if (!paramsMod.isParamLocked || !paramsMod.isParamLocked()) {
                 document.getElementById('create-error').textContent = 'Click "설정 완료" first.';
                 return;
@@ -320,6 +327,10 @@
             }
             if (selectedParams.includes('interest') && interestTags.length === 0) {
                 document.getElementById('create-error').textContent = 'Add at least one interest tag.';
+                return;
+            }
+            if (selectedParams.includes('discussionQuestion') && discussionQuestions.length === 0) {
+                document.getElementById('create-error').textContent = 'Add at least one discussion question.';
                 return;
             }
             var newSession = {
@@ -335,11 +346,14 @@
                 weightRole: weights.role || 0,
                 weightInterest: weights.interest || 0,
                 weightExtroversion: weights.extroversion || 0,
+                weightEnglishLevel: weights.englishLevel || 0,
+                weightDiscussionQuestion: weights.discussionQuestion || 0,
                 status: 'open',
                 students: {},
                 teams: {},
                 roleTags: roleTags,
-                interestTags: interestTags
+                interestTags: interestTags,
+                discussionQuestions: discussionQuestions
             };
             document.getElementById('create-error').textContent = '';
             try {
@@ -406,6 +420,30 @@
             });
         }
 
+        // English Level cards
+        document.getElementById('english-level-grid') && document.getElementById('english-level-grid').addEventListener('click', function (e) {
+            var card = e.target.closest('.english-level-card');
+            if (!card) return;
+            var level = parseInt(card.dataset.level, 10);
+            state.selectedEnglishLevel = level;
+            document.querySelectorAll('.english-level-card').forEach(function (c) {
+                c.classList.toggle('selected', parseInt(c.dataset.level, 10) === level);
+            });
+            render.validateProfileStep();
+        });
+
+        // Discussion Question items
+        document.getElementById('discussion-question-list') && document.getElementById('discussion-question-list').addEventListener('click', function (e) {
+            var item = e.target.closest('.discussion-question-item');
+            if (!item) return;
+            var qId = item.dataset.qId;
+            state.selectedDiscussionQuestion = qId;
+            document.querySelectorAll('.discussion-question-item').forEach(function (el) {
+                el.classList.toggle('selected', el.dataset.qId === qId);
+            });
+            render.validateProfileStep();
+        });
+
         document.getElementById('btn-profile-back') && document.getElementById('btn-profile-back').addEventListener('click', function () {
             var visibleSteps = render.getVisibleProfileSteps ? render.getVisibleProfileSteps(state.currentSession) : ['role', 'interest', 'message'];
             if (state.profileStep === 1) nav.showScreen('landing');
@@ -424,11 +462,15 @@
                 student.interestTagIds = selParams.includes('interest') ? state.selectedInterests.slice() : [];
                 student.customInterest = (document.getElementById('custom-interest') && document.getElementById('custom-interest').value || '').trim();
                 student.extroversionScore = selParams.includes('extroversion') ? state.extroversionScore : undefined;
+                student.englishLevel = selParams.includes('englishLevel') ? state.selectedEnglishLevel : undefined;
+                student.discussionQuestionId = selParams.includes('discussionQuestion') ? state.selectedDiscussionQuestion : undefined;
                 student.messageToTeam = (document.getElementById('message-to-team') && document.getElementById('message-to-team').value || '').trim();
                 try {
                     await firebase.saveStudentInDB(state.currentSession.code, student);
                     state.selectedRoles = [];
                     state.selectedInterests = [];
+                    state.selectedEnglishLevel = null;
+                    state.selectedDiscussionQuestion = null;
                     var session = state.currentSession;
                     if (session.status === 'published') {
                         var myTeam = await firebase.assignLateJoinerToTeam(session.code, session, student);

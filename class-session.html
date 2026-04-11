@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WHO2MEET | Class Session</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="class-session.css">
+</head>
+<body>
+
+    <header class="cs-header">
+        <div class="cs-header-inner">
+            <a href="index.html" class="cs-logo">who2meet</a>
+            <span class="cs-badge">Class Session</span>
+        </div>
+    </header>
+
+    <main id="cs-app">
+
+        <!-- ========================================
+             LANDING SCREEN
+        ======================================== -->
+        <section id="screen-landing" class="cs-screen active">
+            <div class="cs-bg-orb orb-1"></div>
+            <div class="cs-bg-orb orb-2"></div>
+            <div class="cs-container">
+                <div class="cs-hero">
+                    <div class="cs-hero-icon">🎓</div>
+                    <h1 class="cs-hero-title">Class Session</h1>
+                    <p class="cs-hero-sub">Join your discussion group or create a new session</p>
+                </div>
+                <div class="cs-card">
+                    <div class="cs-tabs">
+                        <button class="cs-tab active" id="tab-join" onclick="switchTab('join')">Join Session</button>
+                        <button class="cs-tab" id="tab-create" onclick="switchTab('create')">Create (Instructor)</button>
+                    </div>
+
+                    <!-- Join Tab -->
+                    <div id="panel-join" class="cs-panel active">
+                        <div class="cs-form-group">
+                            <label class="cs-label">Session Code</label>
+                            <input type="text" id="join-code-input" class="cs-input" placeholder="e.g. AB3D7K" maxlength="6" autocomplete="off" spellcheck="false">
+                        </div>
+                        <p id="join-error" class="cs-error"></p>
+                        <button id="btn-join" class="cs-btn cs-btn-primary cs-btn-full" disabled>Join Session →</button>
+                    </div>
+
+                    <!-- Create Tab -->
+                    <div id="panel-create" class="cs-panel">
+                        <div class="cs-form-group">
+                            <label class="cs-label">Session Name</label>
+                            <input type="text" id="create-name-input" class="cs-input" placeholder="e.g. Philosophy 101 - Week 5">
+                        </div>
+                        <div class="cs-form-group">
+                            <label class="cs-label">Team Size</label>
+                            <input type="number" id="create-size-input" class="cs-input" value="4" min="2" max="8">
+                        </div>
+                        <div class="cs-form-group">
+                            <label class="cs-label">Instructor Password</label>
+                            <input type="password" id="create-password-input" class="cs-input" placeholder="Set a password to access dashboard">
+                        </div>
+                        <p id="create-error" class="cs-error"></p>
+                        <button id="btn-create" class="cs-btn cs-btn-secondary cs-btn-full" disabled>Create Session →</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             STUDENT PROFILE SCREEN
+        ======================================== -->
+        <section id="screen-profile" class="cs-screen">
+            <div class="cs-bg-orb orb-1"></div>
+            <div class="cs-bg-orb orb-2"></div>
+            <div class="cs-container">
+                <div class="cs-session-badge" id="profile-session-badge"></div>
+
+                <!-- Step indicators -->
+                <div class="cs-steps" id="profile-steps">
+                    <div class="cs-step active" data-step="1">
+                        <div class="cs-step-dot">1</div>
+                        <span>Name</span>
+                    </div>
+                    <div class="cs-step-line"></div>
+                    <div class="cs-step" data-step="2">
+                        <div class="cs-step-dot">2</div>
+                        <span>English Level</span>
+                    </div>
+                    <div class="cs-step-line"></div>
+                    <div class="cs-step" data-step="3">
+                        <div class="cs-step-dot">3</div>
+                        <span>Question</span>
+                    </div>
+                </div>
+
+                <div class="cs-card">
+                    <!-- Step 1: Name -->
+                    <div id="step-1" class="cs-step-panel active">
+                        <h2 class="cs-step-title">What's your name?</h2>
+                        <div class="cs-form-group">
+                            <label class="cs-label">Your Name</label>
+                            <input type="text" id="student-name-input" class="cs-input cs-input-lg" placeholder="Enter your name">
+                        </div>
+                        <div class="cs-nav-row">
+                            <button class="cs-btn cs-btn-ghost" onclick="goScreen('screen-landing')">← Back</button>
+                            <button id="btn-step1-next" class="cs-btn cs-btn-primary" disabled>Next →</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: English Level -->
+                    <div id="step-2" class="cs-step-panel">
+                        <h2 class="cs-step-title">Your English Proficiency</h2>
+                        <p class="cs-step-desc">Rate your English speaking/discussion ability</p>
+                        <div class="cs-level-grid" id="english-level-grid">
+                            <button class="cs-level-card" data-level="1">
+                                <span class="cs-level-num">1</span>
+                                <span class="cs-level-label">Beginner</span>
+                                <span class="cs-level-desc">Basic phrases only</span>
+                            </button>
+                            <button class="cs-level-card" data-level="2">
+                                <span class="cs-level-num">2</span>
+                                <span class="cs-level-label">Elementary</span>
+                                <span class="cs-level-desc">Simple sentences</span>
+                            </button>
+                            <button class="cs-level-card" data-level="3">
+                                <span class="cs-level-num">3</span>
+                                <span class="cs-level-label">Intermediate</span>
+                                <span class="cs-level-desc">Comfortable conversation</span>
+                            </button>
+                            <button class="cs-level-card" data-level="4">
+                                <span class="cs-level-num">4</span>
+                                <span class="cs-level-label">Advanced</span>
+                                <span class="cs-level-desc">Fluent discussion</span>
+                            </button>
+                            <button class="cs-level-card" data-level="5">
+                                <span class="cs-level-num">5</span>
+                                <span class="cs-level-label">Near-Native</span>
+                                <span class="cs-level-desc">Near-native fluency</span>
+                            </button>
+                        </div>
+                        <div class="cs-nav-row">
+                            <button class="cs-btn cs-btn-ghost" onclick="goProfileStep(1)">← Back</button>
+                            <button id="btn-step2-next" class="cs-btn cs-btn-primary" disabled>Next →</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Question Selection -->
+                    <div id="step-3" class="cs-step-panel">
+                        <h2 class="cs-step-title">Choose Your Discussion Question</h2>
+                        <p class="cs-step-desc">Select one question and prepare your response for the group discussion.</p>
+                        <div class="cs-questions-list" id="questions-list">
+                            <button class="cs-question-card" data-q="1">
+                                <span class="cs-q-num">Q1</span>
+                                <span class="cs-q-text">Am I a special being? Or are humans special beings?</span>
+                            </button>
+                            <button class="cs-question-card" data-q="2">
+                                <span class="cs-q-num">Q2</span>
+                                <span class="cs-q-text">What is an authentic life (to me)?</span>
+                            </button>
+                            <button class="cs-question-card" data-q="3">
+                                <span class="cs-q-num">Q3</span>
+                                <span class="cs-q-text">Does philosophy bring happiness?</span>
+                            </button>
+                            <button class="cs-question-card" data-q="4">
+                                <span class="cs-q-num">Q4</span>
+                                <span class="cs-q-text">Are humans different from animals?</span>
+                            </button>
+                            <button class="cs-question-card" data-q="5">
+                                <span class="cs-q-num">Q5</span>
+                                <span class="cs-q-text">How is the world I encounter different from my environment?</span>
+                            </button>
+                            <button class="cs-question-card" data-q="6">
+                                <span class="cs-q-num">Q6</span>
+                                <span class="cs-q-text">What meaning does the experience of anxiety have in life?</span>
+                            </button>
+                        </div>
+                        <div class="cs-nav-row">
+                            <button class="cs-btn cs-btn-ghost" onclick="goProfileStep(2)">← Back</button>
+                            <button id="btn-submit" class="cs-btn cs-btn-primary" disabled>Submit →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             WAITING SCREEN
+        ======================================== -->
+        <section id="screen-waiting" class="cs-screen">
+            <div class="cs-bg-orb orb-1"></div>
+            <div class="cs-bg-orb orb-2"></div>
+            <div class="cs-container cs-container-center">
+                <div class="cs-waiting-card">
+                    <div class="cs-spinner-wrap">
+                        <div class="cs-spinner"></div>
+                    </div>
+                    <h2 class="cs-waiting-title">You're In! 🎉</h2>
+                    <p class="cs-waiting-desc">Waiting for teams to be assigned by your instructor.<br>This page will update automatically.</p>
+                    <div class="cs-waiting-summary" id="waiting-summary"></div>
+                    <div class="cs-waiting-count" id="waiting-count"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             RESULTS SCREEN
+        ======================================== -->
+        <section id="screen-results" class="cs-screen">
+            <div class="cs-bg-orb orb-1"></div>
+            <div class="cs-bg-orb orb-2"></div>
+            <div class="cs-container cs-container-wide">
+                <div class="cs-results-header">
+                    <h1 id="results-title-text">Your Team</h1>
+                    <p id="results-subtitle-text" class="cs-results-sub"></p>
+                </div>
+                <div id="cs-teams-container"></div>
+                <button class="cs-btn cs-btn-ghost cs-btn-back" id="btn-back-dashboard-results" style="display:none;" onclick="goScreen('screen-dashboard')">← Back to Dashboard</button>
+            </div>
+        </section>
+
+        <!-- ========================================
+             INSTRUCTOR DASHBOARD SCREEN
+        ======================================== -->
+        <section id="screen-dashboard" class="cs-screen">
+            <div class="cs-bg-orb orb-1"></div>
+            <div class="cs-bg-orb orb-2"></div>
+            <div class="cs-container cs-container-wide">
+                <h2 class="cs-dashboard-title">Instructor Dashboard</h2>
+
+                <div class="cs-code-display">
+                    <p class="cs-code-label">Share this code with your students</p>
+                    <button class="cs-code-block" id="btn-copy-code" onclick="copySessionCode()">
+                        <span class="cs-code-value" id="dash-code"></span>
+                        <span class="cs-code-hint" id="dash-copy-hint">Click to copy</span>
+                    </button>
+                </div>
+
+                <div class="cs-dashboard-grid">
+                    <div class="cs-dash-card cs-stat-card">
+                        <div class="cs-stat-num" id="dash-student-count">0</div>
+                        <div class="cs-stat-label">Students Joined</div>
+                    </div>
+                    <div class="cs-dash-card cs-stat-card">
+                        <div class="cs-stat-num" id="dash-status-badge">Open</div>
+                        <div class="cs-stat-label">Status</div>
+                    </div>
+                    <div class="cs-dash-card cs-stat-card">
+                        <div class="cs-stat-num" id="dash-team-size">—</div>
+                        <div class="cs-stat-label">Team Size</div>
+                    </div>
+                </div>
+
+                <!-- Question distribution -->
+                <div class="cs-dash-card" id="question-distribution-card">
+                    <h3 class="cs-dash-card-title">Question Distribution</h3>
+                    <div id="question-distribution" class="cs-q-dist"></div>
+                </div>
+
+                <!-- Student list -->
+                <div class="cs-dash-card">
+                    <h3 class="cs-dash-card-title">Students</h3>
+                    <div id="dash-student-list" class="cs-student-list"></div>
+                </div>
+
+                <div class="cs-dash-actions">
+                    <button id="btn-run-matching" class="cs-btn cs-btn-primary cs-btn-lg">🎲 Run Matching</button>
+                    <button id="btn-view-results" class="cs-btn cs-btn-secondary" style="display:none;">View Results →</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             INSTRUCTOR RE-LOGIN SCREEN
+        ======================================== -->
+        <section id="screen-instructor-login" class="cs-screen">
+            <div class="cs-bg-orb orb-1"></div>
+            <div class="cs-bg-orb orb-2"></div>
+            <div class="cs-container">
+                <div class="cs-card">
+                    <h2 class="cs-step-title">Instructor Login</h2>
+                    <p class="cs-step-desc">Enter your session code and password to access the dashboard.</p>
+                    <div class="cs-form-group">
+                        <label class="cs-label">Session Code</label>
+                        <input type="text" id="il-code-input" class="cs-input" placeholder="6-character code" maxlength="6">
+                    </div>
+                    <div class="cs-form-group">
+                        <label class="cs-label">Password</label>
+                        <input type="password" id="il-password-input" class="cs-input" placeholder="Your instructor password">
+                    </div>
+                    <p id="il-error" class="cs-error"></p>
+                    <div class="cs-nav-row">
+                        <button class="cs-btn cs-btn-ghost" onclick="goScreen('screen-landing')">← Back</button>
+                        <button id="btn-il-login" class="cs-btn cs-btn-primary" disabled>Login →</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <script src="class-session.js"></script>
+</body>
+</html>

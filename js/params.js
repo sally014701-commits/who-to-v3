@@ -51,6 +51,19 @@ export function initCreateParams() {
                     </div>
                     <p class="hint-text extroversion-scale-hint">${t('extroversionScaleHint')}</p>
                    </div>`
+                : p.id === 'englishLevel'
+                ? `<div class="param-form param-form-english-level" id="param-form-${p.id}">
+                    <p class="hint-text">${t('englishLevelHint')}</p>
+                    <div class="english-level-preview">
+                        ${[1,2,3,4,5].map(n => `<span class="english-level-pip">${n}</span>`).join('')}
+                    </div>
+                   </div>`
+                : p.id === 'discussionQuestion'
+                ? `<div class="param-form" id="param-form-${p.id}">
+                    <p class="hint-text">${t('discussionQuestionHint')}</p>
+                    <div id="create-question-list" class="create-tags-list"></div>
+                    <button type="button" class="btn btn-ghost btn-small btn-add-tag" data-param="discussionQuestion">+ Add question</button>
+                   </div>`
                 : '')
             : '';
         return `
@@ -78,6 +91,8 @@ export function initCreateParams() {
             });
         }
     });
+    // Populate default discussion questions when the tile is rendered
+    populateDefaultQuestions();
 }
 
 export function populateDefaultTags() {
@@ -91,6 +106,13 @@ export function populateDefaultTags() {
         interestList.innerHTML = '';
         INTEREST_TAGS.forEach(tag => appendInterestRow(tag.emoji, tag.name));
     }
+}
+
+function populateDefaultQuestions() {
+    const list = document.getElementById('create-question-list');
+    if (!list || list.children.length > 0) return; // already populated
+    // Start with one blank row so instructor can type
+    appendQuestionRow('');
 }
 
 function appendRoleRow(emoji = '', name = '') {
@@ -125,6 +147,21 @@ export function appendCreateInterestTagRow(emoji = '', name = '') {
     appendInterestRow(emoji, name);
 }
 
+export function appendCreateQuestionRow(text = '') {
+    appendQuestionRow(text);
+}
+
+function appendQuestionRow(text = '') {
+    const list = document.getElementById('create-question-list');
+    if (!list) return;
+    const row = document.createElement('div');
+    row.className = 'create-tag-row';
+    row.innerHTML = `
+        <input type="text" class="form-input create-question-text" value="${text.replace(/"/g, '&quot;')}" placeholder="Enter discussion question..." style="flex:1">
+        <button type="button" class="btn btn-ghost btn-small btn-remove-tag" data-list="discussionQuestion" aria-label="Remove">✕</button>`;
+    list.appendChild(row);
+}
+
 export function getCreateRoleTags() {
     const list = document.getElementById('create-role-tags-list');
     if (!list) return [];
@@ -135,6 +172,20 @@ export function getCreateInterestTags() {
     const list = document.getElementById('create-interest-tags-list');
     if (!list) return [];
     return getTagsFromList(list);
+}
+
+export function getCreateDiscussionQuestions() {
+    const list = document.getElementById('create-question-list');
+    if (!list) return [];
+    const seen = {};
+    return [...list.querySelectorAll('.create-question-text')].map((inp, i) => {
+        const text = (inp.value || '').trim();
+        if (!text) return null;
+        let id = 'q-' + (i + 1);
+        if (seen[id]) { let n = 2; while (seen[id + '-' + n]) n++; id = id + '-' + n; }
+        seen[id] = true;
+        return { id, text };
+    }).filter(Boolean);
 }
 
 function getTagsFromList(list) {

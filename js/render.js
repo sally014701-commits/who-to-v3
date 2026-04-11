@@ -1,7 +1,7 @@
 import { state } from './state.js';
 import { getRoleTags, getInterestTags } from './tags.js';
 import { t, tf } from './i18n.js';
-/** Returns ordered step types for profile (role, interest, extroversion if enabled, then message) */
+/** Returns ordered step types for profile (role, interest, extroversion, englishLevel, discussionQuestion if enabled, then message) */
 export function getVisibleProfileSteps(session) {
     const params = session?.selectedParams || ['role', 'interest'];
     const steps = [...params];
@@ -51,7 +51,14 @@ export function renderInterestTags() {
         </div>`).join('');
 }
 
-const STEP_TITLE_KEYS = { role: 'stepYourRoles', interest: 'stepYourInterests', extroversion: 'stepExtroversion', message: 'stepMessageToTeam' };
+const STEP_TITLE_KEYS = {
+    role: 'stepYourRoles',
+    interest: 'stepYourInterests',
+    extroversion: 'stepExtroversion',
+    message: 'stepMessageToTeam',
+    englishLevel: 'stepEnglishLevel',
+    discussionQuestion: 'stepDiscussionQuestion'
+};
 
 export function renderProfileStep(step) {
     const session = state.currentSession;
@@ -86,6 +93,21 @@ export function renderProfileStep(step) {
         if (slider) { slider.value = state.extroversionScore; }
         if (valueEl) valueEl.textContent = state.extroversionScore;
     }
+    if (stepType === 'englishLevel') {
+        // Re-render english level cards, restoring selection
+        document.querySelectorAll('.english-level-card').forEach(card => {
+            const lvl = parseInt(card.dataset.level, 10);
+            card.classList.toggle('selected', lvl === state.selectedEnglishLevel);
+        });
+        // Apply i18n to the card labels
+        if (window.WHO2MEET?.i18n?.applyToPage) window.WHO2MEET.i18n.applyToPage();
+    }
+    if (stepType === 'discussionQuestion') {
+        renderDiscussionQuestions();
+    }
+    // Apply i18n translations to any data-i18n elements inside the active step
+    if (window.WHO2MEET?.i18n?.applyToPage) window.WHO2MEET.i18n.applyToPage();
+    validateProfileStep();
 }
 
 export function getTeamSharedInterestIds(team) {
@@ -94,6 +116,23 @@ export function getTeamSharedInterestIds(team) {
     const allInterestSets = members.map(m => new Set((m.interestTagIds || []).filter(id => id !== 'others')));
     const firstSet = allInterestSets[0];
     return [...firstSet].filter(id => allInterestSets.every(s => s.has(id)));
+}
+
+/** Render discussion question choices from the session config */
+export function renderDiscussionQuestions() {
+    const session = state.currentSession;
+    const questions = session?.discussionQuestions || [];
+    const container = document.getElementById('discussion-question-list');
+    if (!container) return;
+    if (!questions.length) {
+        container.innerHTML = `<p class="hint-text">No questions configured for this session.</p>`;
+        return;
+    }
+    container.innerHTML = questions.map((q, i) => `
+        <div class="discussion-question-item ${state.selectedDiscussionQuestion === q.id ? 'selected' : ''}" data-q-id="${q.id}">
+            <span class="discussion-q-num">Q${i + 1}</span>
+            <span class="discussion-q-text">${q.text}</span>
+        </div>`).join('');
 }
 
 export function renderTeams(teams, showAll = false) {
@@ -155,6 +194,8 @@ export function renderTeams(teams, showAll = false) {
                     ${roleLine ? `<div class="member-role-line">${roleLine}</div>` : ''}
                     ${interestBlock}
                     ${extroBlock}
+                    ${params.includes('englishLevel') && member.englishLevel ? renderEnglishLevelBlock(member.englishLevel) : ''}
+                    ${params.includes('discussionQuestion') && member.discussionQuestionId ? renderDiscussionQuestionBlock(member.discussionQuestionId, session) : ''}
                     ${member.messageToTeam ? `<p class="member-message">"${member.messageToTeam}"</p>` : ''}
                 </div>`;
             }).join('')}
@@ -199,5 +240,23 @@ export function validateProfileStep() {
             valid = valid && customInput && customInput.value.trim().length > 0;
         }
     } else if (stepType === 'extroversion' || stepType === 'message') valid = true;
+    else if (stepType === 'englishLevel') valid = state.selectedEnglishLevel !== null;
+    else if (stepType === 'discussionQuestion') valid = state.selectedDiscussionQuestion !== null;
     nextBtn.disabled = !valid;
+}
+
+function renderEnglishLevelBlock(level) {
+    const labels = { 1: 'Beginner', 2: 'Elementary', 3: 'Intermediate', 4: 'Advanced', 5: 'Near-Native' };
+    const pips = [1,2,3,4,5].map(n =>
+        `<span class="member-level-pip ${n <= level ? 'filled' : ''}"></span>`
+    ).join('');
+    return `<div class="member-english-level"><span class="member-english-label">${t('englishLevelShort')}</span><span class="member-level-pips">${pips}</span><span class="member-level-text">${labels[level] || level}</span></div>`;
+}
+
+function renderDiscussionQuestionBlock(questionId, session) {
+    const questions = session?.discussionQuestions || [];
+    const q = questions.find(q => q.id === questionId);
+    const idx = questions.findIndex(q => q.id === questionId);
+    if (!q) return '';
+    return `<div class="member-discussion-q"><span class="member-q-num">Q${idx + 1}</span><span class="member-q-text">${q.text}</span></div>`;
 }

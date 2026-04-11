@@ -213,9 +213,10 @@ exports.sendTeamResultsEmail = functions
       console.warn('Screenshot skipped:', e.message);
     }
 
-    const apiKey = resendApiKey.value() || process.env.RESEND_API_KEY;
+    const legacyApiKey = (functions.config().resend && functions.config().resend.api_key) || '';
+    const apiKey = resendApiKey.value() || process.env.RESEND_API_KEY || legacyApiKey;
     if (!apiKey) {
-      console.error('Resend API key not configured. Add RESEND_API_KEY secret in Secret Manager.');
+      console.error('Resend API key not configured. Set RESEND_API_KEY secret (recommended) or functions config resend.api_key.');
       throw new functions.https.HttpsError('failed-precondition', 'Email service not configured. Contact admin.');
     }
 
@@ -237,8 +238,10 @@ exports.sendTeamResultsEmail = functions
       console.warn('Resend sandbox: sending to non-@resend.dev may fail. Use delivered@resend.dev for testing, or verify domain for production.');
     }
 
+    const fromAddress = process.env.RESEND_FROM_EMAIL || (functions.config().resend && functions.config().resend.from) || 'WHO2MEET <onboarding@resend.dev>';
+
     const { error } = await resend.emails.send({
-      from: 'WHO2MEET <onboarding@resend.dev>',
+      from: fromAddress,
       to: emailTrimmed,
       subject,
       html,

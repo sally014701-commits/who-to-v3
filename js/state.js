@@ -9,5 +9,7 @@ export const state = {
     selectedInterests: [],
     extroversionScore: 5,
     customInterest: '',
-    messageToTeam: ''
+    messageToTeam: '',
+    selectedEnglishLevel: null,       // 1–5, used when englishLevel param is on
+    selectedDiscussionQuestion: null  // question id string, used when discussionQuestion param is on
 };

@@ -25,6 +25,19 @@ function calculatePairwiseScore(studentA, studentB, weights, params) {
         const interestsB = new Set(studentB.interestTagIds || []);
         score += weights.interest * jaccardSimilarity(interestsA, interestsB);
     }
+    if (params.includes('englishLevel')) {
+        // Similarity: minimize level difference (normalized 0–1)
+        const la = studentA.englishLevel || 3;
+        const lb = studentB.englishLevel || 3;
+        const levelSim = 1 - Math.abs(la - lb) / 4;  // max diff = 4 (1 vs 5)
+        score += weights.englishLevel * levelSim;
+    }
+    if (params.includes('discussionQuestion')) {
+        // Same question = 1, different = 0
+        const sameQ = studentA.discussionQuestionId && studentB.discussionQuestionId &&
+                      studentA.discussionQuestionId === studentB.discussionQuestionId ? 1 : 0;
+        score += weights.discussionQuestion * sameQ;
+    }
     return score;
 }
 
@@ -102,16 +115,22 @@ function getSessionWeightsAndParams(session) {
     const wRole = session.weightRole ?? 50;
     const wInterest = session.weightInterest ?? 50;
     const wExtro = session.weightExtroversion ?? 0;
+    const wEnglish = session.weightEnglishLevel ?? 0;
+    const wQuestion = session.weightDiscussionQuestion ?? 0;
     const total = params.reduce((sum, p) => {
         if (p === 'role') return sum + wRole;
         if (p === 'interest') return sum + wInterest;
         if (p === 'extroversion') return sum + wExtro;
+        if (p === 'englishLevel') return sum + wEnglish;
+        if (p === 'discussionQuestion') return sum + wQuestion;
         return sum;
     }, 0);
     const weights = {
         role: total > 0 ? wRole / total : 0,
         interest: total > 0 ? wInterest / total : 0,
-        extroversion: total > 0 ? wExtro / total : 0
+        extroversion: total > 0 ? wExtro / total : 0,
+        englishLevel: total > 0 ? wEnglish / total : 0,
+        discussionQuestion: total > 0 ? wQuestion / total : 0
     };
     return { params, weights, total };
 }
@@ -120,6 +139,8 @@ function isStudentComplete(s, params) {
     if (params.includes('role') && (!s.roleTagIds || s.roleTagIds.length === 0)) return false;
     if (params.includes('interest') && (!s.interestTagIds || s.interestTagIds.length === 0)) return false;
     if (params.includes('extroversion') && typeof s.extroversionScore !== 'number') return false;
+    if (params.includes('englishLevel') && !s.englishLevel) return false;
+    if (params.includes('discussionQuestion') && !s.discussionQuestionId) return false;
     return true;
 }
 
@@ -128,14 +149,52 @@ export function runMatching(session) {
     const { params, weights } = getSessionWeightsAndParams(session);
     const students = Object.values(studentsObj).filter(s => isStudentComplete(s, params));
     if (students.length === 0) return [];
+
+    // If discussionQuestion is a param, partition students by question first,
+    // then run matching independently within each partition.
+    if (params.includes('discussionQuestion')) {
+        return runMatchingWithQuestionPartition(students, session, params, weights);
+    }
+
     const matrix = buildCompatibilityMatrix(students, weights, params);
     const globalExtroMean = params.includes('extroversion')
         ? students.reduce((s, st) => s + getExtro(st), 0) / students.length
         : null;
     const teamIndices = greedyTeamFormation(students, session.teamSize, matrix, params, weights.extroversion, globalExtroMean);
+    return buildTeamsFromIndices(teamIndices, students, matrix, 0);
+}
+
+function runMatchingWithQuestionPartition(allStudents, session, params, weights) {
+    // Group by chosen question
+    const byQuestion = {};
+    allStudents.forEach(s => {
+        const qId = s.discussionQuestionId || '__none__';
+        if (!byQuestion[qId]) byQuestion[qId] = [];
+        byQuestion[qId].push(s);
+    });
+
+    const allTeams = [];
+    let teamIndexOffset = 0;
+
+    Object.entries(byQuestion).forEach(([, group]) => {
+        if (group.length === 0) return;
+        const matrix = buildCompatibilityMatrix(group, weights, params);
+        const globalExtroMean = params.includes('extroversion')
+            ? group.reduce((s, st) => s + getExtro(st), 0) / group.length
+            : null;
+        const teamIndices = greedyTeamFormation(group, session.teamSize, matrix, params, weights.extroversion, globalExtroMean);
+        const teamsForGroup = buildTeamsFromIndices(teamIndices, group, matrix, teamIndexOffset);
+        teamIndexOffset += teamsForGroup.length;
+        allTeams.push(...teamsForGroup);
+    });
+
+    return allTeams;
+}
+
+function buildTeamsFromIndices(teamIndices, students, matrix, indexOffset) {
     const teams = teamIndices.map((indices, i) => {
         const teamId = generateId();
-        const teamName = `Team ${String.fromCharCode(65 + i)}`;
+        const teamName = `Team ${String.fromCharCode(65 + i + indexOffset)}`;
         const cohesionScore = calculateTeamCohesion(indices, matrix);
         const members = indices.map(idx => students[idx]);
         members.forEach(m => { m.teamId = teamId; });

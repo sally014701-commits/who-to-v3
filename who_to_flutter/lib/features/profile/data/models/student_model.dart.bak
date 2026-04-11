@@ -1,0 +1,66 @@
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'student_model.freezed.dart';
+part 'student_model.g.dart';
+
+@freezed
+class StudentIdentity with _$StudentIdentity {
+  @JsonSerializable(explicitToJson: true)
+  const factory StudentIdentity({
+    required String id,
+    required String password,
+  }) = _StudentIdentity;
+
+  factory StudentIdentity.fromJson(Map<String, dynamic> json) => _$StudentIdentityFromJson(json);
+}
+
+@freezed
+class StudentProfile with _$StudentProfile {
+  @JsonSerializable(explicitToJson: true)
+  const factory StudentProfile({
+    required String name,
+    String? emoji,
+  }) = _StudentProfile;
+
+  factory StudentProfile.fromJson(Map<String, dynamic> json) => _$StudentProfileFromJson(json);
+}
+
+@freezed
+class StudentMatchingInputs with _$StudentMatchingInputs {
+  @JsonSerializable(explicitToJson: true)
+  const factory StudentMatchingInputs({
+    @Default([]) List<String> roleTagIds,
+    @Default([]) List<String> interestTagIds,
+    String? customInterest,
+    @Default(5) int extroversionScore,
+    @Default(1) int englishLevel,
+    String? discussionQuestionId,
+  }) = _StudentMatchingInputs;
+
+  factory StudentMatchingInputs.fromJson(Map<String, dynamic> json) => _$StudentMatchingInputsFromJson(json);
+}
+
+@freezed
+class TeamDeployment with _$TeamDeployment {
+  @JsonSerializable(explicitToJson: true)
+  const factory TeamDeployment({
+    String? teamId,
+    String? messageToTeam,
+  }) = _TeamDeployment;
+
+  factory TeamDeployment.fromJson(Map<String, dynamic> json) => _$TeamDeploymentFromJson(json);
+}
+
+@freezed
+class StudentModel with _$StudentModel {
+  @JsonSerializable(explicitToJson: true)
+  const factory StudentModel({
+    required StudentIdentity identity,
+    required StudentProfile profile,
+    required StudentMatchingInputs inputs,
+    TeamDeployment? deployment,
+  }) = _StudentModel;
+
+  factory StudentModel.fromJson(Map<String, dynamic> json) => _$StudentModelFromJson(json);
+}

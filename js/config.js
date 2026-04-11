@@ -30,5 +30,7 @@ export const INTEREST_TAGS = [
 export const MATCHING_PARAMS = [
     { id: 'role', labelKey: 'roleDiversity', defaultOn: true, hasForm: true },
     { id: 'interest', labelKey: 'interestSimilarity', defaultOn: true, hasForm: true },
-    { id: 'extroversion', labelKey: 'extroversionBalance', defaultOn: false, hasForm: true }
+    { id: 'extroversion', labelKey: 'extroversionBalance', defaultOn: false, hasForm: true },
+    { id: 'englishLevel', labelKey: 'englishLevelSimilarity', defaultOn: false, hasForm: true },
+    { id: 'discussionQuestion', labelKey: 'discussionQuestionMatch', defaultOn: false, hasForm: true }
 ];
