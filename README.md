@@ -114,17 +114,28 @@ who-to-v2/
 
 #### 1) 가중치 정규화 (Weight Normalization)
 선택된 모든 파라미터의 가중치 합을 구한 후 각 파라미터의 가중치를 0 ~ 1 사이로 정규화합니다.
-$$\text{Weight}_{\text{param}} = \frac{W_{\text{param}}}{\sum_{\text{p} \in \text{Params}} W_{\text{p}}}$$
+
+```math
+\text{Weight}_{\text{param}} = \frac{W_{\text{param}}}{\sum_{p \in \text{Params}} W_p}
+```
 
 #### 2) 학생 쌍별 호환성 스코어 (Pairwise Score Formula)
 두 학생 $A$와 $B$ 사이의 호환성 점수는 각 요인의 합으로 계산됩니다:
 
 * **역할 다양성 (Role Diversity - Jaccard Distance)**: 서로 다른 역할 태그를 가질수록 높은 점수를 부여합니다.
-  $$\text{Score}_{\text{role}} = W_{\text{role}} \times \left(1 - \frac{|\text{Role}_A \cap \text{Role}_B|}{|\text{Role}_A \cup \text{Role}_B|}\right)$$
+```math
+\text{Score}_{\text{role}} = W_{\text{role}} \times \left(1 - \frac{|\text{Role}_A \cap \text{Role}_B|}{|\text{Role}_A \cup \text{Role}_B|}\right)
+```
+
 * **관심사 유사도 (Interest Similarity - Jaccard Similarity)**: 동일한 세부 관심사를 공유할수록 높은 점수를 부여합니다.
-  $$\text{Score}_{\text{interest}} = W_{\text{interest}} \times \left(\frac{|\text{Interest}_A \cap \text{Interest}_B|}{|\text{Interest}_A \cup \text{Interest}_B|}\right)$$
+```math
+\text{Score}_{\text{interest}} = W_{\text{interest}} \times \left(\frac{|\text{Interest}_A \cap \text{Interest}_B|}{|\text{Interest}_A \cup \text{Interest}_B|}\right)
+```
+
 * **영어 실력 유사도 (English Level Similarity)**: 레벨 차이(1~5)가 적을수록 높게 계산합니다.
-  $$\text{Score}_{\text{english}} = W_{\text{english}} \times \left(1 - \frac{|\text{Level}_A - \text{Level}_B|}{4}\right)$$
+```math
+\text{Score}_{\text{english}} = W_{\text{english}} \times \left(1 - \frac{|\text{Level}_A - \text{Level}_B|}{4}\right)
+```
 * **토의 주제 (Discussion Question)**: 동일한 토의 주제 선택 시 점수 부여 (또는 주제별 파티셔닝 매칭 수행).
 
 #### 3) 호환성 행렬 (Compatibility Matrix)
